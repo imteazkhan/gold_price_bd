@@ -10,6 +10,28 @@ use Illuminate\Support\Collection;
 
 class RateService
 {
+    /**
+     * Purities hidden from the public website (admin still sees them).
+     * 24K gold is hidden because BAJUS / goldr.org does not publish a 24K rate.
+     * Comment out a line to show that purity on the website again.
+     */
+    public const HIDDEN_ON_SITE = [
+        'gold' => ['24K'],
+    ];
+
+    public function hiddenOnSite(string $metal, string $karat): bool
+    {
+        return in_array($karat, self::HIDDEN_ON_SITE[$metal] ?? [], true);
+    }
+
+    /** Current rates for the public website, without the hidden purities. */
+    public function publicRates(): Collection
+    {
+        return $this->currentRates()
+            ->reject(fn (Purity $p) => $this->hiddenOnSite($p->metal, $p->karat))
+            ->values();
+    }
+
     public function vhoriGrams(): float
     {
         return (float) Setting::get('vhori_grams', 11.664) ?: 11.664;
@@ -110,7 +132,7 @@ class RateService
     /** Compact JSON payload the public page polls for live updates. */
     public function liveSnapshot(): array
     {
-        $rates = $this->currentRates();
+        $rates = $this->publicRates();
         $updated = $this->lastUpdated();
 
         return [

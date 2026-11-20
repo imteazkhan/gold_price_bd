@@ -2,6 +2,8 @@
 
 @push('head')
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  {{-- ApexCharts is required by the goldr.org live widget; it must load before widget.js --}}
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.54.1/dist/apexcharts.min.js"></script>
   <style>
     .info-card { background:#fff; border:1px solid #e5e7eb; border-radius:16px; padding:18px; transition:box-shadow .2s ease, border-color .2s ease; }
     .info-card:hover { box-shadow:0 10px 20px -10px rgba(0,0,0,.12); border-color:#d1d5db; }
@@ -49,12 +51,15 @@
 <span class="inline-flex items-center gap-1.5">
           @if($settings['auto_update_enabled'])<span class="relative flex h-2 w-2" title="Live auto update"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span>@endif
           Updated: <span id="liveUpdated">{{ $lastUpdated ? ($lastUpdated->isToday() ? 'today '.$lastUpdated->format('g:i A') : $lastUpdated->format('M d, Y g:i A')) : '—' }}</span>
+          <span class="text-gray-400">· Dhaka</span>
         </span>
       </span>
       <div class="flex items-center gap-3 sm:gap-4 text-gray-500 shrink-0">
         @if($settings['usd_bdt'])<span class="mono">USD/BDT <span id="liveUsd">{{ number_format((float) $settings['usd_bdt'], 2) }}</span></span>@endif
-        @if($settings['gold_int_usd'])<span class="text-gray-300 hidden md:inline">|</span><span class="mono hidden md:inline">Gold(Int) ${{ number_format((float) $settings['gold_int_usd']) }}/oz</span>@endif
-        @if($settings['silver_int_usd'])<span class="text-gray-300 hidden md:inline">|</span><span class="mono hidden md:inline">Silver(Int) ${{ number_format((float) $settings['silver_int_usd'], 2) }}/oz</span>@endif
+        @if($settings['gold_int_usd'])<span class="text-gray-300 hidden md:inline">|</span>
+        <!-- <span class="mono hidden md:inline">Gold(Int) ${{ number_format((float) $settings['gold_int_usd']) }}/oz</span>@endif
+        @if($settings['silver_int_usd'])<span class="text-gray-300 hidden md:inline">|</span><span class="mono hidden md:inline">Silver(Int) ${{ number_format((float) $settings['silver_int_usd'], 2) }}/oz</span> -->
+        @endif
       </div>
     </div>
   </div>
@@ -78,7 +83,7 @@
         @if($countries->isNotEmpty())<a href="#compare" class="hover:text-amber-600">Compare</a>@endif
         @if($faqs->isNotEmpty())<a href="#faq" class="hover:text-amber-600">FAQ</a>@endif
       </nav>
-      <button id="copyRatesBtn" type="button" class="text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white px-3.5 py-2 rounded-full transition flex items-center gap-1.5 shadow-sm">
+      <button id="copyRatesBtn" type="button" class="text-xs font-semibold bg-blue-500 hover:bg-blue-600 text-white px-3.5 py-2 rounded-full transition flex items-center gap-1.5 shadow-sm">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
         <span>Copy rates</span>
       </button>
@@ -173,7 +178,10 @@
 
     {{-- ===== Karat guide ===== --}}
     @php
-      $guideMain = $rates->filter(fn ($p) => $p->metal === 'gold' && $p->purity_percent && $p->description);
+      // 24K price is hidden on the site, but its info card is still shown here (highest purity first)
+      $guideMain = $guideOnly->concat($rates)
+          ->filter(fn ($p) => $p->metal === 'gold' && $p->purity_percent && $p->description)
+          ->sortByDesc(fn ($p) => (float) $p->purity_percent)->values();
       $guideExtra = $rates->filter(fn ($p) => ! ($p->metal === 'gold' && $p->purity_percent) && $p->description);
     @endphp
     @if($guideMain->isNotEmpty() || $guideExtra->isNotEmpty())
@@ -196,7 +204,11 @@
               <p class="text-xs text-gray-600 mt-3 leading-relaxed">{{ $p->description }}</p>
               <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-[11px]">
                 <span class="text-gray-500">Today /g</span>
-                <span class="mono font-bold text-gray-900" data-live="{{ $p->id }}" data-f="price">{{ bdt($p->price) }}</span>
+                @if($guideOnly->contains('id', $p->id))
+                  <span class="text-gray-400 italic"></span>
+                @else
+                  <span class="mono font-bold text-gray-900" data-live="{{ $p->id }}" data-f="price">{{ bdt($p->price) }}</span>
+                @endif
               </div>
             </div>
           @endforeach
@@ -228,7 +240,7 @@
 
     {{-- ===== Price history ===== --}}
     <section id="history" class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-      <div class="p-4 sm:p-6 border-b border-gray-200">
+      <!-- <div class="p-4 sm:p-6 border-b border-gray-200">
         <div class="flex flex-col gap-4">
           <div>
             <h2 class="text-lg sm:text-xl font-bold text-gray-900">Price history</h2>
@@ -257,9 +269,9 @@
             @endforeach
           </div>
         </div>
-      </div>
+      </div> -->
 
-      <div class="grid grid-cols-2 sm:grid-cols-4 border-b border-gray-200 [&>div]:border-gray-100">
+      <!-- <div class="grid grid-cols-2 sm:grid-cols-4 border-b border-gray-200 [&>div]:border-gray-100">
         <div class="p-3 sm:p-4 border-r border-b sm:border-b-0">
           <p class="text-[10px] font-bold uppercase tracking-wide text-gray-400">Latest price</p>
           <p class="mono text-base sm:text-lg font-extrabold text-gray-900 mt-0.5" id="histLatest">—</p>
@@ -276,9 +288,9 @@
           <p class="text-[10px] font-bold uppercase tracking-wide text-gray-400">High / Low</p>
           <p class="mono text-sm sm:text-lg font-extrabold text-gray-900 mt-0.5" id="histHighLow">—</p>
         </div>
-      </div>
+      </div> -->
 
-      <div class="p-3 sm:p-6 border-b border-gray-100 bg-gray-50/30">
+      <!-- <div class="p-3 sm:p-6 border-b border-gray-100 bg-gray-50/30">
         <div class="flex items-center justify-between mb-2">
           <p class="text-xs font-semibold text-gray-600" id="chartRangeLabel">Price trend · 1 month</p>
           <p class="text-[10px] text-gray-400 font-mono" id="chartUnitLabel">BDT / gram</p>
@@ -287,6 +299,19 @@
           <canvas id="priceChart" aria-label="Price history chart" role="img"></canvas>
           <div id="chartLoading" class="absolute inset-0 hidden items-center justify-center text-xs text-gray-400 bg-white/60">Loading…</div>
         </div>
+      </div> -->
+
+      {{-- Live market chart from goldr.org --}}
+      <div class="p-3 sm:p-6 border-b border-gray-100">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-xs font-semibold text-gray-600 flex items-center gap-1.5">
+            <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span>
+            Live market chart
+          </p>
+          <p class="text-[10px] text-gray-400">Source: <a href="https://www.goldr.org" target="_blank" rel="noopener" class="hover:text-amber-600">goldr.org</a></p>
+        </div>
+        <div id="goldr-widget-container" class="w-full min-h-[300px] overflow-hidden"></div>
+        <script src="https://www.goldr.org/widget.js?fixed"></script>
       </div>
 
       <div class="overflow-auto max-h-[420px]">

@@ -16,7 +16,7 @@ class Setting extends Model
         'site_name' => 'BDGold',
         'site_title' => 'BD Gold Price · Today\'s Gold & Silver Rates in Bangladesh',
         'hero_title' => 'Today\'s gold & silver rates in Bangladesh',
-        'hero_subtitle' => 'Live updates for 24K, 22K, 21K, 18K and traditional gold. Per gram & vhori (bhori), synced with Bangladesh Jewellers Association.',
+        'hero_subtitle' => 'Live updates for 22K, 21K, 18K and traditional gold. Per gram & vhori (bhori), synced with Bangladesh Jewellers Association.',
         'meta_description' => 'Today\'s gold and silver price in Bangladesh per gram and vhori, with price history, chart, jewelry calculator and Gulf comparison.',
         'rates_source' => 'BAJUS',
         'usd_bdt' => '121.40',

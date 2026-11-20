@@ -132,7 +132,7 @@ class RateSyncService
                     'price_per_gram' => $live['gram'],
                     'sell_price_per_gram' => $live['sell'],
                     'source' => 'auto',
-                    'note' => 'Auto: goldr.org',
+                    'note' => ! empty($live['derived']) ? 'Auto: derived from 22K (goldr.org)' : 'Auto: goldr.org',
                     'updated_by' => null,
                 ],
             );

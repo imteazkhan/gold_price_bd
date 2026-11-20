@@ -20,13 +20,15 @@ class HomeController extends Controller
 
     public function index()
     {
-        $rates = $this->rates->currentRates();
+        $rates = $this->rates->publicRates();
         $settings = Setting::all_settings();
 
         // BD price per gram for each gold karat (used by the comparison table)
         $bdGold = $rates->where('metal', 'gold')->mapWithKeys(fn ($p) => [$p->karat => $p->price]);
 
         $countries = CountryPrice::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get()
+            ->reject(fn (CountryPrice $c) => $this->rates->hiddenOnSite('gold', $c->karat))   // no 24K comparison
+            ->values()
             ->each(function (CountryPrice $c) use ($bdGold) {
                 $c->bd_price = (float) ($bdGold[$c->karat] ?? 0);
                 $c->diff = $c->bd_price > 0 ? $c->bdt_per_gram - $c->bd_price : null;
@@ -41,6 +43,9 @@ class HomeController extends Controller
             'calculatorRates' => $rates->where('metal', 'gold')->where('show_in_calculator', true)->where('price', '>', 0)->values(),
             'countries' => $countries,
             'compareKarats' => $countries->pluck('karat')->unique()->values(),
+            // Purities whose price is hidden on the site but still described in the karat guide (e.g. 24K)
+            'guideOnly' => Purity::active()->ordered()->get()
+                ->filter(fn (Purity $p) => $this->rates->hiddenOnSite($p->metal, $p->karat))->values(),
             'faqs' => Faq::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get(),
             'lastUpdated' => $this->rates->lastUpdated(),
             'copyText' => $this->rates->copyText($rates),
@@ -77,7 +82,7 @@ class HomeController extends Controller
         ]);
 
         $purity = Purity::active()->where('metal', $data['metal'])->where('karat', $data['karat'])->first();
-        if (! $purity) {
+        if (! $purity || $this->rates->hiddenOnSite($data['metal'], $data['karat'])) {
             return response()->json(['rows' => [], 'total' => 0]);
         }
 
@@ -93,7 +98,7 @@ class HomeController extends Controller
         ]);
 
         // Always recompute on the server using the current DB rate
-        $purity = $this->rates->currentRates()
+        $purity = $this->rates->publicRates()
             ->where('metal', 'gold')->where('karat', $data['karat'])->first();
         if (! $purity || $purity->price <= 0) {
             return response()->json(['message' => 'Unknown purity.'], 422);
