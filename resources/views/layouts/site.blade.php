@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>@yield('title', $settings['site_title'] ?? config('app.name'))</title>
+  <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
   <meta name="description" content="{{ $settings['meta_description'] ?? '' }}">
   <meta name="theme-color" content="#f59e0b">
   <script src="https://cdn.tailwindcss.com"></script>

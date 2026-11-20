@@ -1,0 +1,119 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1024 1024"
+  width="100%"
+  height="100%">
+
+  <defs>
+
+    <!-- কয়েনের মূল সোনালি গ্রেডিয়েন্ট -->
+    <radialGradient id="coinGold" cx="40%" cy="35%" r="75%">
+      <stop offset="0%"   stop-color="#FFF6C1" />
+      <stop offset="20%"  stop-color="#FFE066" />
+      <stop offset="45%"  stop-color="#FFD700" />
+      <stop offset="70%"  stop-color="#D4A017" />
+      <stop offset="100%" stop-color="#8C6D1F" />
+    </radialGradient>
+
+    <!-- রিম গ্রেডিয়েন্ট -->
+    <linearGradient id="rimGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#FFF8D6" />
+      <stop offset="30%"  stop-color="#FFD700" />
+      <stop offset="60%"  stop-color="#C9A227" />
+      <stop offset="100%" stop-color="#7A5C12" />
+    </linearGradient>
+
+    <!-- শাইন -->
+    <linearGradient id="shine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#FFFFFF" stop-opacity="0.85" />
+      <stop offset="50%"  stop-color="#FFFFFF" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- লেখার জন্য বাঁকানো পাথ (উপরের আর্ক) -->
+    <path id="topArc"
+          d="M 512,512
+             m -270,0
+             a 270,270 0 1,1 540,0" />
+
+    <!-- লেখার জন্য বাঁকানো পাথ (নিচের আর্ক, উল্টো দিক) -->
+    <path id="bottomArc"
+          d="M 512,512
+             m -270,0
+             a 270,270 0 1,0 540,0" />
+
+  </defs>
+
+  <g>
+
+    <!-- বাইরের ছায়া -->
+    <circle cx="512" cy="512" r="400" fill="#5c4408" opacity="0.45" />
+
+    <!-- মূল কয়েন -->
+    <circle cx="512" cy="512" r="390" fill="url(#coinGold)" />
+
+    <!-- বাইরের রিম -->
+    <circle cx="512" cy="512" r="390" fill="none"
+            stroke="url(#rimGold)" stroke-width="22" />
+
+    <!-- ভেতরের এমবসড রিম -->
+    <circle cx="512" cy="512" r="340" fill="none"
+            stroke="#B8860B" stroke-width="10" opacity="0.65" />
+    <circle cx="512" cy="512" r="325" fill="none"
+            stroke="#FFF3B0" stroke-width="4" opacity="0.5" />
+
+    <!-- শাইন -->
+    <ellipse cx="420" cy="360" rx="230" ry="150"
+             fill="url(#shine)" opacity="0.55" />
+
+    <!-- ==== লেখা ==== -->
+
+    <!-- উপরের বাঁকানো লেখা -->
+    <text font-family="Georgia, 'Times New Roman', serif"
+          font-size="54" font-weight="bold"
+          fill="#6B4F0E" opacity="0.85"
+          letter-spacing="6">
+      <textPath href="#topArc" startOffset="50%" text-anchor="middle">
+        ★ GOLD COIN ★
+      </textPath>
+    </text>
+
+    <!-- নিচের বাঁকানো লেখা -->
+    <text font-family="Georgia, 'Times New Roman', serif"
+          font-size="46" font-weight="bold"
+          fill="#6B4F0E" opacity="0.85"
+          letter-spacing="5">
+      <textPath href="#bottomArc" startOffset="50%" text-anchor="middle">
+        ★ ONE OUNCE FINE GOLD ★
+      </textPath>
+    </text>
+
+    <!-- মাঝের বড় প্রতীক ($) -->
+    <text x="512" y="565"
+          font-family="Georgia, 'Times New Roman', serif"
+          font-size="230" font-weight="bold"
+          fill="#6B4F0E" opacity="0.9"
+          text-anchor="middle">
+      $
+    </text>
+
+    <!-- প্রতীকের চারপাশে ছোট ডট (নকশা) -->
+    <g fill="#6B4F0E" opacity="0.75">
+      <circle cx="340" cy="512" r="9" />
+      <circle cx="684" cy="512" r="9" />
+      <circle cx="512" cy="300" r="9" />
+      <circle cx="512" cy="724" r="9" />
+    </g>
+
+    <!-- নিচে বছর -->
+    <text x="512" y="770"
+          font-family="Georgia, 'Times New Roman', serif"
+          font-size="46" font-weight="bold"
+          fill="#6B4F0E" opacity="0.85"
+          text-anchor="middle"
+          letter-spacing="4">
+      2026
+    </text>
+
+  </g>
+</svg>
