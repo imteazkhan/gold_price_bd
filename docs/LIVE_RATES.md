@@ -2,6 +2,8 @@
 
 Ei document e bola ache website e **live price auto update** kivabe kaj kore, kon file e ki ache, ar kichu vul hole ki korben.
 
+> Onno API ar widget (goldr chart widget, TradingView chart, `/history-data`, `/estimates`) er jonno dekhun [API_INTEGRATIONS.md](API_INTEGRATIONS.md).
+
 ---
 
 ## 1. Data kotha theke ase
@@ -275,11 +277,14 @@ Sob setting admin → Update rates → **Live auto update** card theke bodlano j
   "usd_bdt": 124.48,
   "copy_text": "…Copy rates button er text…",
   "rates": [
-    {"id": 2, "metal": "gold", "karat": "22K", "price": 17245, "vhori": 201145.68, "change": -1410, "change_percent": -7.56}
+    {"id": 2, "metal": "gold", "karat": "22K", "price": 17245, "vhori": 201145.68,
+     "sell": 14140.9, "previous": 18655, "change": -1410, "change_percent": -7.56}
   ]
 }
 ```
-`updated_at` = `price_histories` er sobcheye notun `updated_at`, mane shesh je somoy dam asolei bodleche.
+`updated_at` = `price_histories` er sobcheye notun `updated_at` ar shesh **safol** fetch (`auto_last_fetch_at`, status `failed` na hole), er moddhe je ta notun. Tai dam same thakleo check er por "Updated" er somoy agay.
+
+`sell` = sell-back dam / gram (silver e `null`), `previous` = ager recorded diner dam / gram.
 
 ### HTML hook
 Je element e dam dekhay tate `data-live="<purity id>"` ar `data-f="<field>"` ache:
@@ -291,6 +296,8 @@ Je element e dam dekhay tate `data-live="<purity id>"` ar `data-f="<field>"` ach
 | `vhori` / `vhori2` | Vhori dam (0 / 2 decimal) |
 | `change` | `▲ +৳180` / `▼ −৳90` (rate table) |
 | `pill` | Hero card er change pill, color class soho |
+| `sell` | Hero card er sell-back / gram |
+| `previous` | Hero card er ager diner dam / gram |
 
 Calculator button e `data-live-rate="<id>"` ache, jate `data-rate` update hoy.
 
@@ -305,6 +312,7 @@ Calculator button e `data-live-rate="<id>"` ache, jate `data-rate` update hoy.
 
 | Lokkhon | Karon / Somadhan |
 |---|---|
+| Log e `failed: cURL error 60: SSL certificate problem` | Apache er PHP e CA bundle nei. Terminal e kaj kore kintu site e na. Somadhan: [API_INTEGRATIONS.md § 9](API_INTEGRATIONS.md) |
 | Log e `failed: Source returned HTTP 403/5xx` | goldr.org block korche ba down. Kichukkhon por try korun, emonite manual update korun |
 | Log e `failed: No recognisable prices found…` | `price.js` er format bodleche. `GoldrRateFetcher::parse()` er regex/field update korte hobe (`curl https://www.goldr.org/price.js` diye dekhun) |
 | `rejected … (more than 20% …)` | Dam onek beshi bodleche. Thik hole `auto_update_max_jump` baran ba manual save korun |

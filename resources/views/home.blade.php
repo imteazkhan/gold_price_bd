@@ -79,8 +79,8 @@
         <a href="#rates" class="hover:text-amber-600">Rates</a>
         <a href="#info" class="hover:text-amber-600">Info</a>
         <a href="#history" class="hover:text-amber-600">History</a>
-        <a href="#calculator" class="hover:text-amber-600">Calculator</a>
-        @if($countries->isNotEmpty())<a href="#compare" class="hover:text-amber-600">Compare</a>@endif
+        <!-- <a href="#calculator" class="hover:text-amber-600">Calculator</a> -->
+        <!-- @if($countries->isNotEmpty())<a href="#compare" class="hover:text-amber-600">Compare</a>@endif -->
         @if($faqs->isNotEmpty())<a href="#faq" class="hover:text-amber-600">FAQ</a>@endif
       </nav>
       <button id="copyRatesBtn" type="button" class="text-xs font-semibold bg-blue-500 hover:bg-blue-600 text-white px-3.5 py-2 rounded-full transition flex items-center gap-1.5 shadow-sm">
@@ -94,8 +94,8 @@
         <a href="#rates" class="px-3 py-1 rounded-full hover:bg-amber-50 hover:text-amber-700">Rates</a>
         <a href="#info" class="px-3 py-1 rounded-full hover:bg-amber-50 hover:text-amber-700">Info</a>
         <a href="#history" class="px-3 py-1 rounded-full hover:bg-amber-50 hover:text-amber-700">History</a>
-        <a href="#calculator" class="px-3 py-1 rounded-full hover:bg-amber-50 hover:text-amber-700">Calculator</a>
-        @if($countries->isNotEmpty())<a href="#compare" class="px-3 py-1 rounded-full hover:bg-amber-50 hover:text-amber-700">Compare</a>@endif
+        <!-- <a href="#calculator" class="px-3 py-1 rounded-full hover:bg-amber-50 hover:text-amber-700">Calculator</a> -->
+        <!-- @if($countries->isNotEmpty())<a href="#compare" class="px-3 py-1 rounded-full hover:bg-amber-50 hover:text-amber-700">Compare</a>@endif -->
         @if($faqs->isNotEmpty())<a href="#faq" class="px-3 py-1 rounded-full hover:bg-amber-50 hover:text-amber-700">FAQ</a>@endif
       </div>
     </nav>
@@ -113,25 +113,48 @@
       </div>
 
       @if($featured->isNotEmpty())
-        <div class="grid grid-cols-2 sm:grid-cols-{{ min(3, $featured->count()) }} gap-3 sm:gap-4 mt-5 sm:mt-6">
+        <div class="grid grid-cols-1 sm:grid-cols-{{ min(3, $featured->count()) }} gap-3 sm:gap-4 mt-5 sm:mt-6">
           @foreach($featured as $p)
-            @php $odd = $featured->count() % 2 === 1 && $loop->last; @endphp
-            <div class="{{ $odd ? 'col-span-2 sm:col-span-1' : '' }} bg-white p-4 sm:p-5 rounded-2xl border border-gray-200 shadow-sm flex items-start justify-between gap-2">
-              <div class="min-w-0">
-                <div class="text-[10px] sm:text-xs font-bold uppercase tracking-wide {{ $p->metal === 'gold' ? 'text-amber-700' : 'text-gray-500' }} truncate">
-                  {{ $p->metal === 'gold' ? $p->karat : 'Silver '.$p->karat }} {{ $p->tagline ? '· '.$p->tagline : '' }}
+            @php
+              $isGold = $p->metal === 'gold';
+              $cls = $p->change > 0 ? 'pill-up' : ($p->change < 0 ? 'pill-down' : 'pill-flat');
+            @endphp
+            <article class="bg-white rounded-2xl border border-gray-200 p-4 sm:p-5">
+              {{-- Name + day change --}}
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="w-2 h-2 rounded-full shrink-0 {{ $isGold ? 'bg-amber-500' : 'bg-slate-400' }}"></span>
+                  <h3 class="text-sm font-semibold text-gray-900 truncate">{{ $p->label }}</h3>
+                  @if($p->tagline)<span class="text-[11px] text-gray-400 truncate hidden sm:inline">{{ $p->tagline }}</span>@endif
                 </div>
-                <div class="text-lg sm:text-2xl font-extrabold mono mt-1"><span data-live="{{ $p->id }}" data-f="price">{{ bdt($p->price) }}</span> <span class="text-[10px] sm:text-xs font-normal text-gray-400">/g</span></div>
-                <div class="text-[10px] sm:text-xs text-gray-500 mt-1 mono truncate"><span data-live="{{ $p->id }}" data-f="vhori">{{ bdt($p->vhori) }}</span> / vhori</div>
-                @php $cls = $p->change > 0 ? 'pill-up' : ($p->change < 0 ? 'pill-down' : 'pill-flat'); @endphp
-                <span class="pill {{ $cls }} mt-1.5" data-live="{{ $p->id }}" data-f="pill">
+                <span class="pill {{ $cls }}" data-live="{{ $p->id }}" data-f="pill" title="Change vs previous day">
                   {{ signed_bdt($p->change) }} @if($p->change != 0)({{ number_format(abs($p->change_percent), 2) }}%)@endif
                 </span>
               </div>
-              <span class="{{ $p->metal === 'gold' ? ($loop->first ? 'bg-amber-100 text-amber-800' : 'bg-gray-800 text-white') : 'bg-gray-200 text-gray-700' }} text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-1 rounded-lg shrink-0">
-                {{ $p->metal === 'gold' ? $p->karat : 'Ag' }}
-              </span>
-            </div>
+
+              {{-- Main price --}}
+              <p class="mt-3 mono text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+                <span data-live="{{ $p->id }}" data-f="price">{{ bdt($p->price) }}</span><span class="text-xs font-medium text-gray-400 ml-1">/ gram</span>
+              </p>
+
+              {{-- Secondary figures --}}
+              <dl class="mt-4 pt-3 border-t border-gray-100 grid {{ $p->sell ? 'grid-cols-3' : 'grid-cols-2' }} gap-2 text-[11px]">
+                <div class="min-w-0">
+                  <dt class="text-dark-400 font-bold">Per vhori</dt>
+                  <dd class="mono text-sm sm:text-base font-extrabold text-gray-900 mt-0.5 truncate" data-live="{{ $p->id }}" data-f="vhori">{{ bdt($p->vhori) }}</dd>
+                </div>
+                @if($p->sell)
+                  <div class="min-w-0" title="Price a jeweller pays when you sell (BAJUS rule: 18% deducted)">
+                    <dt class="text-gray-400">Sell-back /g</dt>
+                    <dd class="mono font-semibold text-gray-800 mt-0.5 truncate" data-live="{{ $p->id }}" data-f="sell">{{ bdt($p->sell) }}</dd>
+                  </div>
+                @endif
+                <div class="min-w-0">
+                  <dt class="text-gray-400">Previous /g</dt>
+                  <dd class="mono font-semibold text-gray-800 mt-0.5 truncate" data-live="{{ $p->id }}" data-f="previous">{{ bdt($p->previous) }}</dd>
+                </div>
+              </dl>
+            </article>
           @endforeach
         </div>
       @endif
@@ -314,6 +337,43 @@
         <script src="https://www.goldr.org/widget.js?fixed"></script>
       </div>
 
+      {{-- International spot chart (TradingView, via goldprice.org widget) --}}
+      @php
+        $tvConfig = [
+          'symbol' => 'TVC:GOLD',
+          'frameElementId' => 'tradingview_gold',
+          'interval' => 'D',
+          'hide_side_toolbar' => '0',
+          'allow_symbol_change' => '1',
+          'save_image' => '1',
+          'watchlist' => implode("\u{1f}", ['TVC:GOLD', 'TVC:SILVER', 'TVC:PLATINUM', 'TVC:PALLADIUM', 'TVC:GOLDSILVER', 'TVC:USOIL', 'OANDA:EURUSD', 'FX_IDC:USDJPY', 'INDEX:HUI', 'INDEX:XAU', 'COINBASE:BTCUSD']),
+          'details' => '1',
+          'studies' => '[]',
+          'theme' => 'White',
+          'style' => '1',
+          'timezone' => 'Asia/Dhaka',
+          'hideideasbutton' => '1',
+          'withdateranges' => '1',
+          'studies_overrides' => '{}',
+          'utm_source' => 'goldprice.org',
+          'utm_medium' => 'widget',
+          'utm_campaign' => 'chart',
+          'utm_term' => 'TVC:GOLD',
+          'page-uri' => 'goldprice.org/',
+        ];
+        $tvSrc = 'https://s.tradingview.com/goldprice/widgetembed/?hideideas=1&overrides=%7B%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=en#'
+          . rawurlencode(json_encode($tvConfig, JSON_UNESCAPED_SLASHES));
+      @endphp
+      <div class="p-3 sm:p-6 border-b border-gray-100">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-xs font-semibold text-gray-600">International gold spot (USD / oz)</p>
+          <p class="text-[10px] text-gray-400">Chart by <a href="https://www.tradingview.com/symbols/TVC-GOLD/" target="_blank" rel="noopener" class="hover:text-amber-600">TradingView</a></p>
+        </div>
+        <div class="w-full h-[420px] sm:h-[520px] rounded-lg overflow-hidden border border-gray-100">
+          <iframe id="tradingview_gold" src="{{ $tvSrc }}" title="Gold spot price chart" class="w-full h-full" frameborder="0" allowtransparency="true" scrolling="no" allowfullscreen loading="lazy"></iframe>
+        </div>
+      </div>
+
       <div class="overflow-auto max-h-[420px]">
         <table class="history-table w-full">
           <thead>
@@ -325,9 +385,9 @@
               <th class="hidden sm:table-cell" id="tableSecondaryHeader">Vhori</th>
             </tr>
           </thead>
-          <tbody id="historyBody">
+          <!-- <tbody id="historyBody">
             <tr><td colspan="5" class="text-center text-gray-400 py-6">Loading…</td></tr>
-          </tbody>
+          </tbody> -->
         </table>
       </div>
 
@@ -340,7 +400,7 @@
     </section>
 
     {{-- ===== Calculator ===== --}}
-    @if($calculatorRates->isNotEmpty())
+    <!-- @if($calculatorRates->isNotEmpty())
       @php $defaultCalc = $calculatorRates->firstWhere('karat', '22K') ?? $calculatorRates->first(); @endphp
       <section id="calculator" class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
         <div class="grid grid-cols-1 lg:grid-cols-5">
@@ -404,10 +464,10 @@
           </div>
         </div>
       </section>
-    @endif
+    @endif -->
 
     {{-- ===== Global comparison ===== --}}
-    @if($countries->isNotEmpty())
+    <!-- @if($countries->isNotEmpty())
       <section id="compare" class="bg-white rounded-2xl border border-gray-200 p-4 sm:p-6 shadow-sm">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
           <h2 class="text-lg sm:text-xl font-bold text-gray-900">Gold price comparison (<span id="compareKaratLabel">{{ $compareKarats->first() }}</span> per gram)</h2>
@@ -450,7 +510,7 @@
           </div>
         @endif
       </section>
-    @endif
+    @endif -->
 
     {{-- ===== FAQ ===== --}}
     @if($faqs->isNotEmpty())
@@ -779,6 +839,8 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (f === 'price2') text = fmt(r.price, 2);
         else if (f === 'vhori') text = fmt(r.vhori);
         else if (f === 'vhori2') text = fmt(r.vhori, 2);
+        else if (f === 'sell') text = r.sell ? fmt(r.sell) : '—';
+        else if (f === 'previous') text = fmt(r.previous);
         else if (f === 'change') {
           text = r.change ? signed(r.change) : '';
           el.classList.toggle('hidden', !r.change);

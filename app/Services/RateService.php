@@ -59,6 +59,7 @@ class RateService
             $purity->change = $change;
             $purity->change_percent = $prev > 0 ? ($change / $prev) * 100 : 0;
             $purity->vhori = round($price * $vhori, 2);
+            $purity->sell = $latest && $latest->sell_price_per_gram ? (float) $latest->sell_price_per_gram : null;
             $purity->recorded_on = $latest?->recorded_on;
             $purity->rate_updated_at = $latest?->updated_at;
 
@@ -146,6 +147,8 @@ class RateService
                 'karat' => $p->karat,
                 'price' => $p->price,
                 'vhori' => $p->vhori,
+                'sell' => $p->sell,
+                'previous' => $p->previous,
                 'change' => round($p->change, 2),
                 'change_percent' => round($p->change_percent, 2),
             ])->values(),
@@ -156,7 +159,14 @@ class RateService
     public function lastUpdated(): ?Carbon
     {
         $ts = PriceHistory::max('updated_at');
+        $changed = $ts ? Carbon::parse($ts) : null;
 
-        return $ts ? Carbon::parse($ts) : null;
+        // A successful live check with no price change still counts as "updated",
+        // otherwise the label freezes at the first fetch of the day.
+        $checked = Setting::get('auto_last_status') !== 'failed' && Setting::get('auto_last_fetch_at')
+            ? Carbon::parse(Setting::get('auto_last_fetch_at'))
+            : null;
+
+        return $changed && $checked ? $changed->max($checked) : ($changed ?? $checked);
     }
 }
